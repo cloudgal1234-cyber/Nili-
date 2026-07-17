@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "התשחצנילי",
+    "slug": "hatashvatznili",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#FBF8F1"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hatashvatznili.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FBF8F1"
+      },
+      "package": "com.hatashvatznili.app"
+    },
+    "extra": {
+      "forceRTL": true
+    }
+  }
+}
