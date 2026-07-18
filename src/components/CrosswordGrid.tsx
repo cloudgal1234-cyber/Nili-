@@ -5,6 +5,8 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import type { PuzzleBoard } from '../types/grid';
 import GridCell from './GridCell';
 import ClueCell from './ClueCell';
+import { useGameStore } from '../state/gameStore';
+import { colors } from '../theme/colors';
 
 interface Props {
   board: PuzzleBoard;
@@ -12,7 +14,7 @@ interface Props {
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 3;
-const CELL_SIZE = 42;
+const CELL_SIZE = 44;
 
 /**
  * Renders the puzzle grid with pinch-to-zoom and pan, so small text in
@@ -21,6 +23,18 @@ const CELL_SIZE = 42;
  * is the rightmost visual column.
  */
 export default function CrosswordGrid({ board }: Props) {
+  const activeCell = useGameStore((s) => s.activeCell);
+  const activeDirection = useGameStore((s) => s.activeDirection);
+
+  const activeWordCellKeys = React.useMemo(() => {
+    if (!activeCell) return new Set<string>();
+    const cell = board.cells[activeCell.row][activeCell.col];
+    if (cell.type !== 'letter') return new Set<string>();
+    const wordId = cell.wordIds.find((id) => board.words[id]?.direction === activeDirection) ?? cell.wordIds[0];
+    const word = wordId ? board.words[wordId] : null;
+    return new Set(word ? word.cellPositions.map((p) => `${p.row}-${p.col}`) : []);
+  }, [activeCell, activeDirection, board]);
+
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -55,20 +69,28 @@ export default function CrosswordGrid({ board }: Props) {
   return (
     <View style={styles.viewport}>
       <GestureDetector gesture={composed}>
-        <Animated.View
-          style={[styles.grid, { width: board.cols * CELL_SIZE, height: board.rows * CELL_SIZE }, animatedStyle]}
-        >
-          {board.cells.map((row, r) => (
-            <View key={r} style={styles.row}>
-              {row.map((cell) => {
-                if (cell.type === 'clue') return <ClueCell key={`${r}-${cell.col}`} cell={cell} size={CELL_SIZE} />;
-                if (cell.type === 'letter') return <GridCell key={`${r}-${cell.col}`} cell={cell} size={CELL_SIZE} />;
-                return (
-                  <View key={`${r}-${cell.col}`} style={[styles.block, { width: CELL_SIZE, height: CELL_SIZE }]} />
-                );
-              })}
-            </View>
-          ))}
+        <Animated.View style={[styles.gridWrap, animatedStyle]}>
+          <View style={[styles.grid, { width: board.cols * CELL_SIZE, height: board.rows * CELL_SIZE }]}>
+            {board.cells.map((row, r) => (
+              <View key={r} style={styles.row}>
+                {row.map((cell) => {
+                  if (cell.type === 'clue') return <ClueCell key={`${r}-${cell.col}`} cell={cell} size={CELL_SIZE} />;
+                  if (cell.type === 'letter')
+                    return (
+                      <GridCell
+                        key={`${r}-${cell.col}`}
+                        cell={cell}
+                        size={CELL_SIZE}
+                        isInActiveWord={activeWordCellKeys.has(`${r}-${cell.col}`)}
+                      />
+                    );
+                  return (
+                    <View key={`${r}-${cell.col}`} style={[styles.block, { width: CELL_SIZE, height: CELL_SIZE }]} />
+                  );
+                })}
+              </View>
+            ))}
+          </View>
         </Animated.View>
       </GestureDetector>
     </View>
@@ -81,8 +103,17 @@ function clamp(value: number, min: number, max: number) {
 }
 
 const styles = StyleSheet.create({
-  viewport: { flex: 1, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
-  grid: { flexDirection: 'column' },
+  viewport: { flex: 1, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.paper },
+  gridWrap: { alignItems: 'center', justifyContent: 'center' },
+  grid: {
+    flexDirection: 'column',
+    borderWidth: 2,
+    borderColor: colors.block,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+  },
   row: { flexDirection: 'row-reverse' },
-  block: { backgroundColor: '#1F2937' },
+  block: { backgroundColor: colors.block },
 });

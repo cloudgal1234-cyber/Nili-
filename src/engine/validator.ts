@@ -63,7 +63,12 @@ export function validateGeneratedBoard(board: PuzzleBoard, dictionary: Dictionar
         const slot = board.words[wordId];
         if (!slot) continue;
         const idx = slot.cellPositions.findIndex((p) => p.row === cell.row && p.col === cell.col);
-        if (idx >= 0 && slot.answer[idx] !== cell.solution) {
+        // Compare normalized: cell.solution is deliberately stored in
+        // regular-letter form (see generator.ts) so a cell that's the final
+        // letter of one crossing word but a medial letter of the other has
+        // one consistent value; slot.answer keeps the correctly-spelled
+        // whole word, so it must be normalized here before comparing.
+        if (idx >= 0 && normalizeHebrewWord(slot.answer)[idx] !== cell.solution) {
           issues.push({
             code: 'INTERSECTION_MISMATCH',
             message: `Cell letter "${cell.solution}" does not match word "${slot.answer}" (${wordId}) at this position.`,

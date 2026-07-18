@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet, SafeAreaView } from 'react-native';
 import { useGameStore } from '../state/gameStore';
 import { HEBREW_ALPHABET } from '../utils/hebrew';
+import { colors, radii } from '../theme/colors';
 
 const ROWS = [HEBREW_ALPHABET.slice(0, 8), HEBREW_ALPHABET.slice(8, 16), HEBREW_ALPHABET.slice(16)];
 
@@ -23,18 +24,28 @@ export default function HebrewKeyboard() {
       {ROWS.map((row, i) => (
         <View key={i} style={styles.row}>
           {row.map((letter) => (
-            <Pressable key={letter} style={styles.key} onPress={() => inputLetter(letter)}>
+            <Pressable
+              key={letter}
+              style={({ pressed }) => [styles.key, pressed && styles.keyPressed]}
+              onPress={() => inputLetter(letter)}
+            >
               <Text style={styles.keyText}>{letter}</Text>
             </Pressable>
           ))}
         </View>
       ))}
       <View style={styles.row}>
-        <Pressable style={[styles.key, styles.wideKey]} onPress={toggleDirection}>
-          <Text style={styles.keyText}>{activeDirection === 'across' ? '↓ עבור למאונך' : '← עבור למאוזן'}</Text>
+        <Pressable
+          style={({ pressed }) => [styles.key, styles.wideKey, pressed && styles.keyPressed]}
+          onPress={toggleDirection}
+        >
+          <Text style={styles.wideKeyText}>{activeDirection === 'across' ? '↓ מאונך' : '← מאוזן'}</Text>
         </Pressable>
-        <Pressable style={[styles.key, styles.wideKey]} onPress={deleteLetter}>
-          <Text style={styles.keyText}>⌫ מחק</Text>
+        <Pressable
+          style={({ pressed }) => [styles.key, styles.wideKey, styles.deleteKey, pressed && styles.keyPressed]}
+          onPress={deleteLetter}
+        >
+          <Text style={styles.wideKeyText}>⌫ מחק</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -42,21 +53,24 @@ export default function HebrewKeyboard() {
 }
 
 const styles = StyleSheet.create({
-  keyboard: { backgroundColor: '#E5E7EB', paddingVertical: 8, paddingHorizontal: 4 },
-  row: { flexDirection: 'row-reverse', justifyContent: 'center', marginVertical: 2 },
+  keyboard: { backgroundColor: colors.petrolDark, paddingVertical: 10, paddingHorizontal: 4 },
+  row: { flexDirection: 'row-reverse', justifyContent: 'center', marginVertical: 3 },
   key: {
-    minWidth: 32,
-    height: 40,
+    minWidth: 33,
+    height: 42,
     marginHorizontal: 2,
-    borderRadius: 6,
-    backgroundColor: 'white',
+    borderRadius: radii.sm,
+    backgroundColor: colors.paper,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 1,
     shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 1,
+    shadowOpacity: 0.2,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 2 },
   },
-  wideKey: { minWidth: 110, paddingHorizontal: 8 },
-  keyText: { fontSize: 15, writingDirection: 'rtl' },
+  keyPressed: { backgroundColor: colors.active, transform: [{ translateY: 1 }] },
+  wideKey: { minWidth: 110, paddingHorizontal: 8, backgroundColor: colors.brassLight },
+  deleteKey: { backgroundColor: '#E4A98F' },
+  keyText: { fontSize: 16, fontWeight: '600', writingDirection: 'rtl', color: colors.ink },
+  wideKeyText: { fontSize: 14, fontWeight: '700', writingDirection: 'rtl', color: colors.ink },
 });

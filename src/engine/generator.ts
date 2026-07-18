@@ -107,11 +107,16 @@ function buildBoard(
   const chosenClue: Record<string, string> = {};
 
   for (const slot of slotDefs) {
-    const word = assignment[slot.id];
-    const entry = entryByWord.get(word);
+    // `assignment` holds the *normalized* word (final letters collapsed to
+    // regular form) used for CSP matching — display/storage must use the
+    // dictionary's original spelling, or a word like "כהן" would be shown
+    // as the mis-spelled "כהנ".
+    const normalizedWord = assignment[slot.id];
+    const entry = entryByWord.get(normalizedWord);
     if (!entry) {
-      throw new Error(`Internal error: solved word "${word}" is missing from the dictionary index.`);
+      throw new Error(`Internal error: solved word "${normalizedWord}" is missing from the dictionary index.`);
     }
+    const displayWord = entry.word;
     chosenClue[slot.id] = entry.clues[Math.floor(random() * entry.clues.length)] ?? entry.clues[0];
 
     words[slot.id] = {
@@ -122,9 +127,16 @@ function buildBoard(
       length: slot.length,
       cellPositions: slot.cells,
       clueCell: slot.clueCell,
-      answer: word,
+      answer: displayWord,
     };
 
+    // Per-cell solution letters use the *normalized* (regular-form) spelling,
+    // not displayWord: a cell can be the LAST letter of one crossing word
+    // (which would want a final form, e.g. ן) while being a MIDDLE letter of
+    // the other (which wants the regular form, e.g. נ) — the two words only
+    // ever agree once finals are collapsed, so that's the only form a
+    // single shared cell can consistently hold. `answer` above keeps the
+    // correctly-spelled whole word (with finals) for the Answers screen.
     slot.cells.forEach(({ row, col }, idx) => {
       const existing = cells[row][col];
       const wordIds = existing.type === 'letter' ? existing.wordIds : [];
@@ -132,7 +144,7 @@ function buildBoard(
         row,
         col,
         type: 'letter',
-        solution: word[idx],
+        solution: normalizedWord[idx],
         wordIds: [...wordIds, slot.id],
       };
     });

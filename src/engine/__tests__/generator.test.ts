@@ -6,12 +6,13 @@ import type { Template } from '../types';
 import { sampleTemplate } from '../../data/sampleTemplate';
 import { sampleDictionary } from '../../data/sampleDictionary';
 import { seededRandom } from '../../utils/random';
+import { normalizeHebrewWord } from '../../utils/hebrew';
 
 describe('deriveWordSlots', () => {
-  it('finds exactly the across and down word in the sample template', () => {
+  it('finds all six interlocking words in the sample template', () => {
     const slots = deriveWordSlots(sampleTemplate);
     const ids = slots.map((s) => s.id).sort();
-    expect(ids).toEqual(['A-1-1', 'D-1-1']);
+    expect(ids).toEqual(['A-1-3', 'A-3-1', 'A-5-3', 'D-1-4', 'D-2-1', 'D-2-7']);
   });
 
   it('throws when a letter run has no clue cell pointing at it', () => {
@@ -41,13 +42,15 @@ describe('generateBoard', () => {
   });
 
   it('produces intersecting letters that agree at the crossing cell', () => {
-    // (1,1) is the shared cell between the across and down word.
-    const crossing = board.cells[1][1];
+    // (3,4) is the center: shared between the across spine (A-3-1) and the down spine (D-1-4).
+    const crossing = board.cells[3][4];
     expect(crossing.type).toBe('letter');
     if (crossing.type === 'letter') {
-      expect(crossing.wordIds.sort()).toEqual(['A-1-1', 'D-1-1']);
-      expect(board.words['A-1-1'].answer[0]).toBe(crossing.solution);
-      expect(board.words['D-1-1'].answer[0]).toBe(crossing.solution);
+      expect(crossing.wordIds.sort()).toEqual(['A-3-1', 'D-1-4']);
+      expect(crossing.solution).toMatch(/^[א-ת]$/);
+      // A-3-1 starts at col1, so col4 is its index 3; D-1-4 starts at row1, so row3 is its index 2.
+      expect(normalizeHebrewWord(board.words['A-3-1'].answer)[3]).toBe(crossing.solution);
+      expect(normalizeHebrewWord(board.words['D-1-4'].answer)[2]).toBe(crossing.solution);
     }
   });
 

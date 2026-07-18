@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import type { ClueCell as ClueCellModel, Direction } from '../types/grid';
+import { colors } from '../theme/colors';
 
 interface Props {
   cell: ClueCellModel;
@@ -22,8 +23,8 @@ export default function ClueCell({ cell, size }: Props) {
     <View style={[styles.cell, { width: size, height: size }]}>
       {cell.arrows.map((arrow) => (
         <View key={arrow.direction} style={styles.arrowRow}>
-          <Text style={styles.arrow}>{ARROW_GLYPH[arrow.direction]}</Text>
-          <Text numberOfLines={3} style={styles.text}>
+          <Text style={[styles.arrow, { fontSize: size * 0.24 }]}>{ARROW_GLYPH[arrow.direction]}</Text>
+          <Text numberOfLines={4} style={[styles.text, { fontSize: size * 0.16 }]}>
             {arrow.text}
           </Text>
         </View>
@@ -34,13 +35,14 @@ export default function ClueCell({ cell, size }: Props) {
 
 const styles = StyleSheet.create({
   cell: {
-    borderWidth: 1,
-    borderColor: '#374151',
-    backgroundColor: '#111827',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#0B1512',
+    backgroundColor: colors.block,
     padding: 2,
     justifyContent: 'center',
+    gap: 1,
   },
   arrowRow: { flexDirection: 'row-reverse', alignItems: 'center' },
-  arrow: { color: '#FBBF24', fontSize: 10, marginStart: 2 },
-  text: { color: 'white', fontSize: 7, writingDirection: 'rtl', flexShrink: 1, textAlign: 'right' },
+  arrow: { color: colors.brassLight, marginStart: 2, fontWeight: '700' },
+  text: { color: colors.clueText, writingDirection: 'rtl', flexShrink: 1, textAlign: 'right' },
 });
