@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "typecheck:engine": "tsc --noEmit -p tsconfig.engine.json"
+    "typecheck:engine": "tsc --noEmit -p tsconfig.engine.json",
+    "vercel-build": "expo export --platform web --output-dir dist"
   },
   "dependencies": {
     "@expo/metro-runtime": "~3.2.1",
